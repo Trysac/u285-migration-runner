@@ -19,6 +19,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+migration-runner = "migration_runner.__main__:main"
+
 [project.urls]
 Homepage = "https://github.com/Trysac/u285-migration-runner"
 Source = "https://github.com/Trysac/u285-migration-runner"

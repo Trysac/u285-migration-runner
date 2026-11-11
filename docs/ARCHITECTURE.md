@@ -2,28 +2,25 @@
 
 ## Purpose
 
-`trysac-migration-runner` is a small, dependency-free Python library: Run versioned SQL migrations against SQLite with a cross-process lock table, checksums of applied files, transactional apply and rollback, and a dry-run plan
+`migration_runner` is a standard-library Python package that loads ordered SQL files and applies them to a SQLite connection with a lock table, checksum history, transactional apply, and a dry-run plan.
 
 ## Shape
 
 ```text
-caller code --> migration_runner (public API in __init__.py)
+caller code --> migration_runner.__init__ (exports)
                     |
-                    +-- pure functions, no I/O, no global state
+                    +-- migrations.py: Migration, MigrationStatus, errors, load_migrations, Migrator
+                    +-- __main__.py: argparse CLI (migrate, status, plan)
 ```
 
-- **Public API**: the names listed in `__all__` of `src/migration_runner/__init__.py`. Anything else is
-  internal and may change without a major version.
-- **Errors**: invalid input raises built-in exceptions (`ValueError`, `TypeError`) with a clear
-  message; the library never prints or exits.
-- **Side effects**: none. If a feature needs I/O, isolate it in its own module behind a small
-  interface and record the choice in an ADR.
+- **Public API**: the names in `__all__` of `src/migration_runner/__init__.py`: `LockError`, `Migration`, `MigrationError`, `MigrationStatus`, `Migrator`, `load_migrations`, and `__version__`.
+- **I/O**: `load_migrations` reads a directory and files; `Migrator` executes SQL on the caller-provided `sqlite3.Connection`. The library API does not open database connections itself; the CLI opens one from `--db`.
+- **Errors**: invalid files, checksums, ordering, scripts, and apply failures raise `MigrationError` or `LockError`; missing directories raise `OSError`.
 
 ## Quality contract
 
-`scripts/check.py` is the single definition of the gates; `fabrica.json` tells the factory and CI
-how to run it. See [TESTING.md](TESTING.md).
+Tests are in `tests/test_migration_runner.py` and `tests/test_migrations.py` and run with `pytest`. The package ships `py.typed`.
 
 ## Decisions
 
-Architecture decisions are recorded in [decisions/](decisions/) as numbered ADRs.
+No architecture decision records are present in the provided repository; behavior is defined by the code and specification.

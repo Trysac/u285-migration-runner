@@ -3,27 +3,18 @@
 ## Running
 
 ```sh
-uv run pytest --cov=migration_runner   # tests with coverage report
-uv run python scripts/check.py      # every gate, as CI and the factory run it
+python -m pytest
 ```
 
 ## Policy
 
-- Branch coverage of `src/migration_runner` must stay at or above 80 %; the gate fails below it.
-- Tests exercise the public API (`import migration_runner`) and assert every observable effect:
-  return values, raised exceptions and their messages.
-- Each bug fix starts with a failing test that reproduces it.
-- Tests are deterministic: no network, no wall clock, no dependence on test order.
+Tests are `pytest` functions in `tests/`. They import the public API from `migration_runner` and use temporary directories and in-memory SQLite connections where needed. The repository currently contains one pytest tier; there are no marked conformance tests or external-tool downloads in the files present.
 
 ## Tiers
 
-- Local tier (every gate run, coverage measured here): unit and property tests, plus conformance on small
-  fixtures kept in the repository.
-- CI tier: conformance that needs an external tool or a download. Mark them `@pytest.mark.conformance`; `scripts/check.py` deselects them locally
-  (unless `FABRICA_CI=1`). The CI `conformance` job sets `FABRICA_CI=1` and runs the full suite. Tools are installed
-  by the optional `ci/conformance-setup.sh` (bash, CI only; verify every download against a pinned SHA-256), and
-  tagged tests skip cleanly when their tool is missing.
+All tests in the repository run with `pytest` as a single local tier. No separate CI conformance tier is present in the test files.
 
 ## Layout
 
-`tests/test_<module>.py` mirrors each public module. Shared fixtures go in `tests/conftest.py`.
+- `tests/test_migration_runner.py`: `test_version_is_semver` checks `__version__`; `test_public_api_is_exported` checks the names in `__all__`; `test_migration_dataclass_is_frozen` checks that `Migration` is frozen; `test_lock_error_reports_owner_and_code` checks `LockError` message and code.
+- `tests/test_migrations.py`: defines `FakeClock`, `write_migration`, and `make_conn`; `test_load_migrations_basic` covers ordering and ignoring `notes.txt`; `test_load_migrations_invalid_name` covers `invalid_name`; `test_load_migrations_duplicate_version` covers `duplicate_version`.
