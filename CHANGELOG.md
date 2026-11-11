@@ -9,4 +9,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Add `migration_runner` package with SQLite migration runner, lock table, checksum verification, transactional apply, CLI, and full test suite.
 - Initial project structure from the factory utility template.
