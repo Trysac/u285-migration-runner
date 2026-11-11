@@ -187,7 +187,11 @@ def test_line_endings_only_change_does_not_mismatch(tmp_path: Path) -> None:
 
     # rewrite with CRLF but same logical content
     path = tmp_path / "V1__init.sql"
-    path.write_text(path.read_text(encoding="utf-8").replace("\n", "\r\n"), encoding="utf-8")
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("\n", "\r\n"),
+        encoding="utf-8",
+        newline="",
+    )
     new_migrations = load_migrations(tmp_path)
     Migrator(conn, new_migrations, owner="a").migrate()  # should not raise
 
